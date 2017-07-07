@@ -18,70 +18,70 @@ public class HeadFootRecyclerViewAdapter extends RecyclerView.Adapter {
     private ArrayList<View> mHeaderViewInfos = new ArrayList<>();
     private ArrayList<View> mFooterViewInfos = new ArrayList<>();
     private RecyclerView.Adapter mAdapter;
-
-    public static int TYPE_HEAD = -1;
-    public static int TYPE_CONTENT = 1;
-    public static int TYPE_FOOT = -2;
-
-
+    public static int TYPE_HEAD = RecyclerView.INVALID_TYPE;
+    public static int TYPE_FOOT = RecyclerView.INVALID_TYPE-1;
     public HeadFootRecyclerViewAdapter(ArrayList<View> mHeaderViewInfos, ArrayList<View> mFooterViewInfos, RecyclerView.Adapter mAdapter) {
-
         this.mAdapter = mAdapter;
-
         if (mHeaderViewInfos == null) {
-
-            mHeaderViewInfos = new ArrayList<>();
-
+            this.mHeaderViewInfos = new ArrayList<>();
         } else {
-
             this.mHeaderViewInfos = mHeaderViewInfos;
         }
 
-
         if (mFooterViewInfos == null) {
-
-            mFooterViewInfos = new ArrayList<>();
+            this.mFooterViewInfos = new ArrayList<>();
         } else {
-
             this.mFooterViewInfos = mFooterViewInfos;
         }
-
     }
-
 
     @Override
     public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-
         if (viewType == TYPE_HEAD) {
-
             return new HeaderViewHolder(mHeaderViewInfos.get(0));
-        }
-
-        if (viewType == TYPE_FOOT) {
-
+        }else if (viewType == TYPE_FOOT) {
             return new FooterViewHolder(mFooterViewInfos.get(0));
         }
-        return mAdapter.onCreateViewHolder(parent,viewType);
+        return mAdapter.onCreateViewHolder(parent, viewType);
+    }
+
+    @Override
+    public int getItemViewType(int position) {
+
+        int headNum = mHeaderViewInfos.size();
+        if (headNum > position) {
+            return TYPE_HEAD;
+        }
+        final int adjPosition = position - headNum;
+        int adapterCount = 0;
+        if (mAdapter != null) {
+            adapterCount = mAdapter.getItemCount();
+            if (adapterCount > adjPosition) {
+
+                return mAdapter.getItemViewType(adjPosition);
+            }
+        }
+        return TYPE_FOOT;
     }
 
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
 
-        int itemViewType = holder.getItemViewType();
+        int itemViewType = getItemViewType(position);
+        if (itemViewType == TYPE_HEAD) {
+            return;
+        } else if (itemViewType==TYPE_FOOT){
 
-        if (itemViewType==TYPE_HEAD || itemViewType==TYPE_FOOT){
             return;
         }else {
-
-            mAdapter.onBindViewHolder(holder,position - mHeaderViewInfos.size());
+            mAdapter.onBindViewHolder(holder, position - mHeaderViewInfos.size());
         }
-
-
     }
 
     @Override
     public int getItemCount() {
-        return 0;
+        return mAdapter == null ? mFooterViewInfos.size() + mHeaderViewInfos.size() :
+                mAdapter.getItemCount() + mFooterViewInfos.size() + mHeaderViewInfos.size();
     }
 
     private static class HeaderViewHolder extends RecyclerView.ViewHolder {
