@@ -18,6 +18,7 @@ public class HuiAdapter extends RecyclerView.Adapter<HuiAdapter.ViewHolder> {
 
     private List<String> datas;
 
+    private OnItemClickListener listener;
 
     public HuiAdapter(List<String> datas) {
         this.datas = datas;
@@ -32,10 +33,30 @@ public class HuiAdapter extends RecyclerView.Adapter<HuiAdapter.ViewHolder> {
         return new ViewHolder(inflate);
     }
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void setOnItemClickListener(OnItemClickListener listener) {
 
-        holder.tv.setText(datas.get(position));
+        this.listener = listener;
+    }
+
+    @Override
+    public void onBindViewHolder(final ViewHolder holder, final int position) {
+
+        final String s = datas.get(position);
+
+        holder.tv.setText(s);
+
+        if (listener != null) {
+
+            holder.itemView.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+
+                    listener.onItemClick(s, holder.itemView, position);
+                }
+            });
+        }
+
+
     }
 
     @Override
@@ -53,9 +74,9 @@ public class HuiAdapter extends RecyclerView.Adapter<HuiAdapter.ViewHolder> {
         }
     }
 
-    public interface OnItemClickListener<T> {
+    public interface OnItemClickListener {
 
-        void onItemClick(T t, View view, int position);
+        void onItemClick(Object t, View view, int position);
     }
 
 
